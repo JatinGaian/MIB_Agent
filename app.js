@@ -18,6 +18,7 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
         console.log(`Webhook received with schemaId: ${schemaId} at ${new Date().toISOString()}`);
 
         const temp = req.body;
+        console.log("webhook is working fine", temp)
 
         // console.log("Raw Webhook Event:", JSON.stringify(temp, null, 2)); // Log full request body
 
@@ -28,8 +29,8 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
             eventKey = temp.webhookEvent;
         }
 
-        const response = {
-            webhookUpdation: temp.timestamp,
+        const dataObject = {
+            webhookUpdation: `${temp.timestamp}`,
             eventType: temp.issue_event_type_name || temp.webhookEvent,
             comment: temp?.comment?.body || "NotAvailable",
             issueKey: temp.issue?.key,
@@ -45,7 +46,7 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
             parentIssueStatus: temp.issue?.fields?.parent?.fields?.status?.name || "NotAvailable",
         };
 
-        console.log("Webhook Event Processed:", JSON.stringify(response, null, 2));
+        console.log("Webhook Event Processed:", JSON.stringify(dataObject, null, 2));
 
         const issueKey = temp.issue?.key;
         const issueSummary = temp.issue?.fields?.summary;
@@ -57,16 +58,16 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
         }
 
         // Prevent duplicate calls by checking for duplicate timestamps
-        if (global.lastWebhookTimestamp === temp.timestamp) {
-            console.warn("Duplicate webhook event detected, ignoring...");
-            return res.status(200).send({ message: "Duplicate webhook event ignored" });
-        }
-        global.lastWebhookTimestamp = temp.timestamp;
+        // if (global.lastWebhookTimestamp === temp.timestamp) {
+        //     console.warn("Duplicate webhook event detected, ignoring...");
+        //     return res.status(200).send({ message: "Duplicate webhook event ignored" });
+        // }
+        // global.lastWebhookTimestamp = temp.timestamp;
 
         // Call function to create an instance in the schema
-        const token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI3Ny1NUVdFRTNHZE5adGlsWU5IYmpsa2dVSkpaWUJWVmN1UmFZdHl5ejFjIn0.eyJleHAiOjE3MjYxODIzMzEsImlhdCI6MTcyNjE0NjMzMSwianRpIjoiOGVlZTU1MDctNGVlOC00NjE1LTg3OWUtNTVkMjViMjQ2MGFmIiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmtleWNsb2FrLnN2Yy5jbHVzdGVyLmxvY2FsOjgwODAvcmVhbG1zL21hc3RlciIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmNzFmMzU5My1hNjdhLTQwYmMtYTExYS05YTQ0NjY4YjQxMGQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJIT0xBQ1JBQ1kiLCJzZXNzaW9uX3N0YXRlIjoiYmI1ZjJkMzktYTQ3ZC00MjI0LWFjZGMtZTdmNzQwNDc2OTgwIiwibmFtZSI6ImtzYW14cCBrc2FteHAiLCJnaXZlbl9uYW1lIjoia3NhbXhwIiwiZmFtaWx5X25hbWUiOiJrc2FteHAiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYXNzd29yZF90ZW5hbnRfa3NhbXhwQG1vYml1c2R0YWFzLmFpIiwiZW1haWwiOiJwYXNzd29yZF90ZW5hbnRfa3NhbXhwQG1vYml1c2R0YWFzLmFpIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiLyoiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtbWFzdGVyIiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7IkhPTEFDUkFDWSI6eyJyb2xlcyI6WyJIT0xBQ1JBQ1lfVVNFUiJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwic2lkIjoiYmI1ZjJkMzktYTQ3ZC00MjI0LWFjZGMtZTdmNzQwNDc2OTgwIiwidGVuYW50SWQiOiJmNzFmMzU5My1hNjdhLTQwYmMtYTExYS05YTQ0NjY4YjQxMGQiLCJyZXF1ZXN0ZXJUeXBlIjoiVEVOQU5UIn0=.FXeDyHBhlG9L4_NCeSyHEaNEBVmhFpfSBqlcbhHaPaoydhKcA0BfuyHgxg_32kQk6z5S9IQ7nVKS2ybtOvwo0WyLWwLQchSq7Noa7LooHIMzmeWMQb_bLKtbaOti59zwIdS8CkfGaXut7RUQKISQVWmbUGsVJQa2JkG6Ng_QN0y5hFVksMWPZiXVsofQkJXHXV1CQ3gabhhHKo3BqlJwzpsCKLDfg1-4PmSl1Wqbw03Ef2yolroj5i8FoeHukOQPkwCUHrrNw-ilIp917nqZa89YbCMtDjWyaj8pEH7GJR5vMZPE2WcJPn5dSA1IHVunfatEB1cDAitaFjVNWNnddQ"; // Replace with actual token
+        const token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI3Ny1NUVdFRTNHZE5adGlsWU5IYmpsa2dVSkpaWUJWVmN1UmFZdHl5ejFjIn0.eyJleHAiOjE3MzMxNzE1MzQsImlhdCI6MTczMzEzNTUzNCwianRpIjoiOTk4ZDk0NDktNTM2OS00OTdhLTg4YzAtN2FmNjYzZDM2MDM3IiwiaXNzIjoiaHR0cDovL2tleWNsb2FrLmtleWNsb2FrLnN2Yy5jbHVzdGVyLmxvY2FsOjgwODAvcmVhbG1zL21hc3RlciIsImF1ZCI6WyJQQVNDQUxfSU5URUxMSUdFTkNFIiwiWFBYLUNNUyIsImNkZmciLCJhY2NvdW50Il0sInN1YiI6IjdjMmEwY2M1LTY5ODgtNDk5OS04ZjZkLTQ4MjM2MzQ4MmVlZiIsInR5cCI6IkJlYXJlciIsImF6cCI6IkhPTEFDUkFDWSIsInNlc3Npb25fc3RhdGUiOiIzZjRkYjdlMC0zM2IxLTRhYjQtYjgwYi0zODhhNGUyYjNlNDgiLCJuYW1lIjoibW9iaXVzIG1vYml1cyIsImdpdmVuX25hbWUiOiJtb2JpdXMiLCJmYW1pbHlfbmFtZSI6Im1vYml1cyIsInByZWZlcnJlZF91c2VybmFtZSI6InBhc3N3b3JkX3RlbmFudF9tb2JpdXNAbW9iaXVzZHRhYXMuYWkiLCJlbWFpbCI6InBhc3N3b3JkX3RlbmFudF9tb2JpdXNAbW9iaXVzZHRhYXMuYWkiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1tYXN0ZXIiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiUEFTQ0FMX0lOVEVMTElHRU5DRSI6eyJyb2xlcyI6WyJTVVBFUkFETUlOIl19LCJYUFgtQ01TIjp7InJvbGVzIjpbIlhQWC1DTVNfVVNFUiJdfSwiSE9MQUNSQUNZIjp7InJvbGVzIjpbIkhPTEFDUkFDWV9VU0VSIl19LCJjZGZnIjp7InJvbGVzIjpbIkJPTFRaTUFOTl9CT1RfVVNFUiJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJwcm9maWxlIGVtYWlsIiwic2lkIjoiM2Y0ZGI3ZTAtMzNiMS00YWI0LWI4MGItMzg4YTRlMmIzZTQ4IiwidGVuYW50SWQiOiI3YzJhMGNjNS02OTg4LTQ5OTktOGY2ZC00ODIzNjM0ODJlZWYiLCJyZXF1ZXN0ZXJUeXBlIjoiVEVOQU5UIn0=.NEhACUI5FtTEcbbeZedP8kyGBX4CO0OSZ72pNyX49MQjKGHAwpiiuIa2TpRsi7HY6x-DwfDpiCjWCjVT3GVlYwId6FCwUh8nz8gUQx-6gRp9Y5GlR2YWUrYDea-ltvxKXtExIVcP-DmLN-vfiONPC-PuXq9iG-g9-Rbn0jAgm85lOHSrmHjHJjN7kMsUuP21OdHx-7If0w6Hp7U28raHudhzq0CN_lSMdj3ydgjI81f5WtShJVbbmOK-JJp3Qf870pN4ppsZPkwQagCmWjArCkfagrPox3sbjoOTzfnPqhefKUbuCtU7mtrQ8_4Dm5wcf0DrFvJ94c7M6YQsUL6RyA"; // Replace with actual token
 
-        // await helperToCreateInstance(response, schemaId, token);
+        await helperToCreateInstance(dataObject, schemaId, token);
 
         res.status(200).send({ message: "Webhook received and data ingested" });
     } catch (error) {
@@ -74,6 +75,26 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
         res.status(500).send({ error: "Internal Server Error" });
     }
 });
+
+async function helperToCreateInstance(response, schemaId, token) {
+    const finalUrl = `https://ig.gov-cloud.ai/pi-entity-instances-service/v2.0/schemas/${schemaId}/instances?upsert=true`;
+
+    const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+    };
+    const responseArray = []
+    responseArray.push(response);
+    // console.log("responseArray",responseArray);
+    const payload = { data: responseArray };
+
+    try {
+        const apiResponse = await axios.post(finalUrl, payload, { headers });
+        console.log("CreatedInstance response:", apiResponse.data);
+    } catch (error) {
+        console.error("Failed to send the CreateInstance request:", error.response?.data || error.message);
+    }
+}
 
 
 
