@@ -18,7 +18,13 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
         console.log(`Webhook received with schemaId: ${schemaId} at ${new Date().toISOString()}`);
 
         const temp = req.body;
-        console.log("webhook is working fine", temp)
+        if (temp?.issue?.fields?.project?.key !== "MAT") {
+            console.log("only MAT project updates can be saved")
+            return res.json({
+                message:"only MAT project updates can be saved"
+            })
+        }
+        // console.log("webhook is working fine", temp)
 
         // console.log("Raw Webhook Event:", JSON.stringify(temp, null, 2)); // Log full request body
 
