@@ -43,7 +43,7 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
             summary: temp.issue?.fields?.summary,
             issueType: temp.issue?.fields?.issuetype?.name,
             status: temp.issue?.fields?.status?.name,
-            description: temp.issue?.fields?.description?.content?.[0]?.content?.[0]?.text || "No description",
+            description: temp.issue?.fields?.description?.content?.[0]?.content?.[0]?.text ? temp.issue?.fields?.description?.content?.[0]?.content?.[0]?.text : temp.issue?.fields?.description ? temp.issue?.fields?.description : "No Description",
             created: temp.issue?.fields?.created || temp.comment?.created,
             updated: temp.issue?.fields?.updated || temp.comment?.updated,
             parentKey: temp.issue?.fields?.parent?.key || "NotAvailable",
