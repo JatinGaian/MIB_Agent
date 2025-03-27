@@ -38,7 +38,12 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
         const dataObject = {
             webhookUpdation: `${temp.timestamp}`,
             eventType: temp.issue_event_type_name || temp.webhookEvent,
-            comment: temp?.comment?.body || "NotAvailable",
+            comment: temp.issue?.fields?.comment?.comments.map(({ author, body, updated }) => ({
+                authorName: author?.displayName,
+                email: author?.emailAddress,
+                body,
+                updated
+            })) || [],
             issueKey: temp.issue?.key,
             summary: temp.issue?.fields?.summary,
             issueType: temp.issue?.fields?.issuetype?.name,
