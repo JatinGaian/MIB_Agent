@@ -26,7 +26,7 @@ app.post("/mib/webhook/schemaId/:schemaId", async (req, res) => {
         }
         // console.log("webhook is working fine", temp)
 
-        // console.log("Raw Webhook Event:", JSON.stringify(temp, null, 2)); // Log full request body
+        console.log("Raw Webhook Event:", JSON.stringify(temp, null, 2)); // Log full request body
 
         let eventKey;
         if (temp.issue_event_type_name) {
